@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Fosmikro — Curso de Desarrollo Completo</title>
+<style>
+  :root {
+    --bg-0: #060a12; --bg-1: #0d1526; --bg-2: #111c32; --bg-3: #162038;
+    --border: #1e3050; --border-b: #2a4570;
+    --cyan: #00d4ff; --cyan-dim: #0099cc; --cyan-faint: rgba(0,212,255,.08);
+    --violet: #7c3aed; --violet-dim: #5b21b6;
+    --t1: #e2e8f0; --t2: #7f98b8; --t3: #3d5270;
+    --green: #10b981; --yellow: #f59e0b; --red: #ef4444; --blue: #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg-0); color: var(--t1); font-family: 'Segoe UI', system-ui, sans-serif; font-size: 15px; line-height: 1.7; }
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ── Barra superior ── */
+  header {
+    background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-3) 100%);
+    border-bottom: 1px solid var(--border-b);
+    padding: 48px 40px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .logo { font-size: 48px; font-weight: 900; letter-spacing: -1px; color: var(--cyan); text-shadow: 0 0 30px rgba(0,212,255,.5); }
+  .logo span { color: var(--t2); font-weight: 300; }
+  header p { color: var(--t2); font-size: 16px; margin-top: 10px; max-width: 620px; margin-inline: auto; }
+  .badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 18px; }
+  .badge { background: var(--bg-2); border: 1px solid var(--border-b); border-radius: 20px; padding: 4px 14px; font-size: 13px; color: var(--cyan); }
+
+  /* ── Layout ── */
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+  .grid-2 { display: grid; grid-template-columns: 280px 1fr; gap: 32px; margin-top: 40px; }
+  @media (max-width: 860px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* ── Sidebar (TOC) ── */
+  .toc { position: sticky; top: 24px; height: fit-content; }
+  .toc-box { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+  .toc-title { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--t2); font-weight: 700; margin-bottom: 14px; }
+  .toc ol { list-style: none; counter-reset: toc; }
+  .toc ol li { counter-increment: toc; margin-bottom: 4px; }
+  .toc ol li a { color: var(--t2); font-size: 13px; display: flex; gap: 8px; padding: 4px 8px; border-radius: 5px; transition: all .15s; }
+  .toc ol li a::before { content: counter(toc, decimal-leading-zero); color: var(--t3); font-size: 11px; min-width: 22px; }
+  .toc ol li a:hover { background: var(--bg-3); color: var(--t1); text-decoration: none; }
+  .toc ol li a.active { background: var(--cyan-faint); color: var(--cyan); border-left: 2px solid var(--cyan); border-radius: 0 5px 5px 0; }
+
+  /* ── Secciones ── */
+  section { margin-bottom: 56px; }
+  h2 { font-size: 26px; font-weight: 700; color: var(--t1); margin-bottom: 6px; padding-top: 12px; border-top: 1px solid var(--border); padding-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+  h2 .sec-num { background: var(--cyan); color: #000; border-radius: 6px; font-size: 13px; font-weight: 800; padding: 2px 8px; min-width: 28px; text-align: center; }
+  h3 { font-size: 17px; font-weight: 600; color: var(--cyan-dim); margin: 24px 0 10px; }
+  h4 { font-size: 14px; font-weight: 700; color: var(--t2); text-transform: uppercase; letter-spacing: .05em; margin: 16px 0 8px; }
+  p { color: var(--t1); margin-bottom: 12px; }
+  .lead { font-size: 17px; color: var(--t2); line-height: 1.8; margin-bottom: 20px; }
+
+  /* ── Cajas ── */
+  .card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; }
+  .card-accent { border-color: var(--cyan-dim); background: var(--bg-2); box-shadow: inset 0 0 0 1px rgba(0,212,255,.1); }
+  .info-box { background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.3); border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
+  .warn-box { background: rgba(245,158,11,.07); border: 1px solid rgba(245,158,11,.35); border-radius: 8px; padding: 14px 18px; margin: 12px 0; }
+  .info-box p, .warn-box p { margin: 0; font-size: 14px; color: var(--t1); }
+  .info-box::before { content: 'ℹ️  '; } .warn-box::before { content: '⚠️  '; }
+
+  /* ── Código ── */
+  pre, code { font-family: 'Cascadia Code', 'JetBrains Mono', 'Fira Code', monospace; }
+  code { background: var(--bg-3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: 13px; color: var(--cyan); }
+  pre { background: var(--bg-1); border: 1px solid var(--border); border-radius: 10px; padding: 20px; overflow-x: auto; font-size: 13px; line-height: 1.6; margin: 12px 0; position: relative; }
+  pre code { background: none; border: none; padding: 0; color: var(--t1); font-size: 13px; }
+  pre .comment { color: var(--t3); }
+  pre .key { color: var(--cyan); }
+  pre .val { color: #a5f3fc; }
+  pre .str { color: #86efac; }
+  pre .cmd { color: #fde68a; }
+  .pre-label { font-size: 11px; color: var(--t3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 4px; }
+
+  /* ── Fases ── */
+  .phase-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 20px; }
+  .phase-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 20px; transition: all .2s; position: relative; overflow: hidden; }
+  .phase-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .phase-card.p0::before { background: var(--t3); }
+  .phase-card.p1::before { background: var(--cyan); }
+  .phase-card.p2::before { background: var(--green); }
+  .phase-card.p3::before { background: var(--yellow); }
+  .phase-card.p4::before { background: var(--red); }
+  .phase-card.p5::before { background: var(--violet); }
+  .phase-card.p6::before { background: #f97316; }
+  .phase-card.p7::before { background: #06b6d4; }
+  .phase-card.p8::before { background: #84cc16; }
+  .phase-card.p9::before { background: #ec4899; }
+  .phase-card.p10::before { background: #8b5cf6; }
+  .phase-card.p11::before { background: linear-gradient(90deg, var(--cyan), var(--violet)); }
+  .phase-card:hover { border-color: var(--border-b); transform: translateY(-2px); }
+  .phase-num { font-size: 11px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: .08em; }
+  .phase-title { font-size: 17px; font-weight: 700; color: var(--t1); margin: 6px 0; }
+  .phase-desc { font-size: 13px; color: var(--t2); line-height: 1.6; }
+  .phase-tasks { margin-top: 12px; list-style: none; }
+  .phase-tasks li { font-size: 13px; color: var(--t2); padding: 3px 0; display: flex; gap: 8px; }
+  .phase-tasks li::before { content: '›'; color: var(--t3); }
+
+  /* ── Tabla de stack ── */
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; }
+  th { background: var(--bg-1); color: var(--t2); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+  td { padding: 10px 14px; border-bottom: 1px solid var(--border); color: var(--t1); font-size: 14px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-3); }
+  td .tag { display: inline-block; background: var(--bg-3); border: 1px solid var(--border); border-radius: 4px; padding: 1px 7px; font-size: 12px; color: var(--t2); margin: 2px; }
+
+  /* ── Prompt box ── */
+  .prompt-box { background: var(--bg-1); border: 1px solid var(--cyan-dim); border-radius: 12px; padding: 28px 32px; margin: 20px 0; position: relative; }
+  .prompt-box::before { content: 'PROMPT COMPLETO PARA CLAUDE CODE'; position: absolute; top: -11px; left: 20px; background: var(--bg-0); color: var(--cyan); font-size: 11px; font-weight: 700; letter-spacing: .1em; padding: 0 10px; }
+  .prompt-box p { font-family: 'Cascadia Code', monospace; font-size: 13.5px; line-height: 1.8; color: #c7d4e8; margin-bottom: 14px; }
+  .prompt-box p:last-child { margin-bottom: 0; }
+  .prompt-section { font-size: 12px; font-weight: 700; color: var(--cyan); text-transform: uppercase; letter-spacing: .1em; margin: 18px 0 6px; }
+
+  /* ── Instalación ── */
+  .install-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; margin: 16px 0; }
+  .install-card { background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+  .install-card h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: var(--t1); font-size: 15px; text-transform: none; letter-spacing: 0; }
+  .install-card .dl-link { display: inline-flex; align-items: center; gap: 6px; background: var(--cyan-faint); border: 1px solid var(--cyan-dim); border-radius: 6px; padding: 5px 12px; font-size: 13px; color: var(--cyan); margin-bottom: 10px; }
+  .install-card p { font-size: 13px; color: var(--t2); margin-bottom: 8px; }
+
+  /* ── Misc ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+  ul { padding-left: 20px; margin-bottom: 12px; }
+  ul li { color: var(--t1); font-size: 14px; margin-bottom: 4px; }
+  .highlight { color: var(--cyan); font-weight: 600; }
+  .muted { color: var(--t2); }
+  footer { text-align: center; padding: 40px 20px; color: var(--t3); font-size: 13px; border-top: 1px solid var(--border); margin-top: 60px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<header>
+  <div class="logo">Fos<span>mikro</span></div>
+  <p>Curso completo de desarrollo de un sistema ISP Manager con IA — Claude Code + Vue 3 + Hono + Supabase</p>
+  <div class="badges">
+    <span class="badge">Vue 3 + TypeScript</span>
+    <span class="badge">Hono Backend</span>
+    <span class="badge">Supabase</span>
+    <span class="badge">Docker</span>
+    <span class="badge">Claude Code</span>
+    <span class="badge">Tailwind CSS v4</span>
+    <span class="badge">GenieACS · TR-069</span>
+    <span class="badge">FreeRADIUS</span>
+  </div>
+</header>
+
+<!-- ══════════ CONTENIDO ══════════ -->
+<div class="wrap">
+<div class="grid-2">
+
+  <!-- ── SIDEBAR TOC ── -->
+  <aside class="toc">
+    <div class="toc-box">
+      <div class="toc-title">Índice del curso</div>
+      <ol>
+        <li><a href="#sec-intro">¿Qué es Fosmikro?</a></li>
+        <li><a href="#sec-stack">Stack tecnológico</a></li>
+        <li><a href="#sec-instalar">Instalación del entorno</a></li>
+        <li><a href="#sec-claude">Instalar Claude Code</a></li>
+        <li><a href="#sec-proyecto">Crear el proyecto</a></li>
+        <li><a href="#sec-prompt">Prompt completo</a></li>
+        <li><a href="#sec-fases">Fases de desarrollo</a></li>
+        <li><a href="#sec-fase0">Fase 0 — Entorno base</a></li>
+        <li><a href="#sec-fase1">Fase 1 — Fundación</a></li>
+        <li><a href="#sec-fase2">Fase 2 — Clientes</a></li>
+        <li><a href="#sec-fase3">Fase 3 — OLT / ONT</a></li>
+        <li><a href="#sec-fase4">Fase 4 — Facturación</a></li>
+        <li><a href="#sec-fase5">Fase 5 — TR-069</a></li>
+        <li><a href="#sec-fase6">Fase 6 — MikroTik</a></li>
+        <li><a href="#sec-fase7">Fase 7 — NOC</a></li>
+        <li><a href="#sec-fase8">Fase 8 — Fibra OSP</a></li>
+        <li><a href="#sec-fase9">Fase 9 — RADIUS</a></li>
+        <li><a href="#sec-fase10">Fase 10 — CRM</a></li>
+        <li><a href="#sec-fase11">Fase 11 — Deploy</a></li>
+        <li><a href="#sec-estructura">Estructura del proyecto</a></li>
+      </ol>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main>
+
+    <!-- 1. ¿QUÉ ES FOSMIKRO? -->
+    <section id="sec-intro">
+      <h2><span class="sec-num">01</span> ¿Qué es Fosmikro?</h2>
+      <p class="lead">Fosmikro es un <strong>sistema de gestión para ISPs (proveedores de internet)</strong> de tamaño pequeño a mediano, desarrollado en Ecuador. Reemplaza soluciones costosas como SmartOLT o ISP Cube con una plataforma 100% propia, extensible y desplegada en la nube.</p>
+
+      <div class="card card-accent">
+        <h3 style="margin-top:0">Problemas que resuelve</h3>
+        <ul>
+          <li>Gestión de clientes, contratos y planes de internet desde un solo lugar</li>
+          <li>Control de ONTs/ONUs en OLTs Huawei, ZTE y V-SOL vía SSH</li>
+          <li>Configuración remota de WiFi y PPPoE en equipos del cliente (TR-069/GenieACS)</li>
+          <li>Facturación electrónica válida para el SRI Ecuador (XAdES BES)</li>
+          <li>Corte y reconexión automática de servicio (RADIUS + MikroTik)</li>
+          <li>Monitoreo de señal óptica y alertas NOC en tiempo real</li>
+          <li>Mapa de planta externa: tendido de fibra, splitters, nodos</li>
+          <li>Multi-empresa (multi-tenant) con aislamiento de datos por RLS</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Arquitectura general</h3>
+        <p class="muted" style="font-size:14px">El sistema corre en una VM Oracle Cloud Free Tier (ARM64) con un túnel WireGuard hacia la red del ISP, permitiendo que el backend alcance las OLTs y MikroTiks de forma segura desde internet.</p>
+        <pre><code><span class="comment"># Vista de alto nivel</span>
+Browser ──HTTPS──▶ nginx (80) ──▶ Vue 3 SPA
+                       └─/api/──▶ Hono Backend (Node.js)
+                                     ├──▶ Supabase (Postgres + Auth)
+                                     ├──▶ GenieACS NBI (TR-069)
+                                     ├──▶ FreeRADIUS
+                                     └──WireGuard──▶ OLT / MikroTik (LAN ISP)</code></pre>
+      </div>
+    </section>
+
+    <!-- 2. STACK TECNOLÓGICO -->
+    <section id="sec-stack">
+      <h2><span class="sec-num">02</span> Stack tecnológico</h2>
+      <table>
+        <thead><tr><th>Capa</th><th>Tecnología</th><th>Función</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag">Frontend</span></td><td><strong>Vue 3 + TypeScript + Vite</strong></td><td>SPA con Composition API, script setup</td></tr>
+          <tr><td><span class="tag">Estilos</span></td><td><strong>Tailwind CSS v4</strong></td><td>Utilidades + design system cyber dark</td></tr>
+          <tr><td><span class="tag">Estado</span></td><td><strong>Pinia</strong></td><td>Stores de clientes, OLTs, auth</td></tr>
+          <tr><td><span class="tag">Routing</span></td><td><strong>Vue Router 4</strong></td><td>Rutas protegidas, lazy loading</td></tr>
+          <tr><td><span class="tag">Backend</span></td><td><strong>Hono (Node.js 22)</strong></td><td>API REST, proxy SSH, scheduler</td></tr>
+          <tr><td><span class="tag">Base de datos</span></td><td><strong>Supabase (Postgres)</strong></td><td>BD + Auth + Row Level Security</td></tr>
+          <tr><td><span class="tag">SSH / OLT</span></td><td><strong>ssh2 (npm)</strong></td><td>Conexión SSH a OLTs y MikroTik</td></tr>
+          <tr><td><span class="tag">TR-069</span></td><td><strong>GenieACS</strong></td><td>ACS para gestión de ONTs CWMP</td></tr>
+          <tr><td><span class="tag">RADIUS</span></td><td><strong>FreeRADIUS</strong></td><td>Autenticación PPPoE, CoA/corte</td></tr>
+          <tr><td><span class="tag">Mapas</span></td><td><strong>Leaflet.js</strong></td><td>Mapa de fibra OSP</td></tr>
+          <tr><td><span class="tag">Gráficos</span></td><td><strong>Chart.js + vue-chartjs</strong></td><td>Estadísticas y NOC</td></tr>
+          <tr><td><span class="tag">PDF</span></td><td><strong>jsPDF + html2canvas</strong></td><td>Facturas, recibos, RIDE</td></tr>
+          <tr><td><span class="tag">Firma digital</span></td><td><strong>xadesjs</strong></td><td>XAdES BES — firma SRI Ecuador</td></tr>
+          <tr><td><span class="tag">Contenedores</span></td><td><strong>Docker + Compose</strong></td><td>nginx + backend + GenieACS + Mongo + RADIUS</td></tr>
+          <tr><td><span class="tag">VPN</span></td><td><strong>WireGuard</strong></td><td>Túnel VPS ↔ LAN del ISP</td></tr>
+          <tr><td><span class="tag">IA</span></td><td><strong>Claude Code (Anthropic)</strong></td><td>Asistente de desarrollo</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- 3. INSTALACIÓN DEL ENTORNO -->
+    <section id="sec-instalar">
+      <h2><span class="sec-num">03</span> Instalación del entorno de desarrollo</h2>
+      <p class="lead">Antes de escribir una sola línea de código necesitas estas herramientas instaladas en tu PC de desarrollo (Windows 10/11, macOS o Ubuntu).</p>
+
+      <div class="install-grid">
+
+        <div class="install-card">
+          <h4>🟢 Node.js 22 LTS</h4>
+          <a class="dl-link" href="https://nodejs.org/en/download/" target="_blank">↓ nodejs.org/en/download</a>
+          <p>Runtime de JavaScript. Incluye <code>npm</code>. Elige la versión LTS (22.x).</p>
+          <div class="pre-label">Verificar instalación</div>
+          <pre><code>node --version   <span class="comment"># v22.x.x</span>
+npm --version    <span class="comment"># 10.x.x</span></code></pre>
+        </div>
+
+        <div class="install-card">
+          <h4>🐙 Git</h4>
+          <a class="dl-link" href="https://git-scm.com/downloads" target="_blank">↓ git-scm.com/downloads</a>
+          <p>Control de versiones. En Windows instala Git Bash también.</p>
+          <div class="pre-label">Verificar</div>
+          <pre><code>git --version    <span class="comment"># git version 2.x</span></code></pre>
+        </div>
+
+        <div class="install-card">
+          <h4>🖊️ VS Code</h4>
+          <a class="dl-link" href="https://code.visualstudio.com/" target="_blank">↓ code.visualstudio.com</a>
+          <p>Editor recomendado. Instala las extensiones: <strong>Vue - Official</strong>, <strong>Tailwind CSS IntelliSense</strong>, <strong>ESLint</strong>, <strong>Prettier</strong>.</p>
+          <div class="pre-label">Extensiones esenciales (instalar desde VS Code)</div>
+          <pre><code>Vue.volar
+bradlc.vscode-tailwindcss
+dbaeumer.vscode-eslint
+esbenp.prettier-vscode</code></pre>
+        </div>
+
+        <div class="install-card">
+          <h4>🐳 Docker Desktop</h4>
+          <a class="dl-link" href="https://www.docker.com/products/docker-desktop/" target="_blank">↓ docker.com/products/docker-desktop</a>
+          <p>Necesario para correr GenieACS, MongoDB, FreeRADIUS y nginx en local. Requiere WSL 2 en Windows.</p>
+          <div class="pre-label">Verificar</div>
+          <pre><code>docker --version          <span class="comment"># Docker 27.x</span>
+docker compose version    <span class="comment"># v2.x</span></code></pre>
+        </div>
+
+        <div class="install-card">
+          <h4>🟡 Supabase CLI</h4>
+          <a class="dl-link" href="https://supabase.com/docs/guides/cli/getting-started" target="_blank">↓ supabase.com/docs/guides/cli</a>
+          <p>Herramienta para migraciones de base de datos y desarrollo local con Postgres.</p>
+          <div class="pre-label">Instalar via npm</div>
+          <pre><code>npm install -g supabase
+supabase --version    <span class="comment"># 2.x.x</span></code></pre>
+        </div>
+
+        <div class="install-card">
+          <h4>🌐 Cuenta Supabase</h4>
+          <a class="dl-link" href="https://supabase.com" target="_blank">↓ supabase.com (gratis)</a>
+          <p>Crea un proyecto en el plan Free. Obtén <code>SUPABASE_URL</code>, <code>ANON_KEY</code> y <code>SERVICE_ROLE_KEY</code> desde el dashboard.</p>
+        </div>
+
+      </div>
+
+      <h3>Dependencias npm del proyecto</h3>
+      <p class="muted" style="font-size:14px">Se instalan automáticamente con <code>npm install</code> al clonar el repo. Aquí están listadas para referencia:</p>
+
+      <div class="card">
+        <h4>Frontend (src/)</h4>
+        <pre><code><span class="comment"># Dependencias de producción</span>
+npm install vue@3 vue-router@4 pinia
+npm install @supabase/supabase-js
+npm install leaflet vue-leaflet
+npm install chart.js vue-chartjs
+npm install vue-sonner         <span class="comment"># toasts/notificaciones</span>
+npm install jspdf html2canvas
+npm install xadesjs            <span class="comment"># firma XAdES SRI Ecuador</span>
+npm install @heroicons/vue
+
+<span class="comment"># Dependencias de desarrollo</span>
+npm install -D vite @vitejs/plugin-vue
+npm install -D typescript vue-tsc
+npm install -D tailwindcss @tailwindcss/vite
+npm install -D @types/leaflet</code></pre>
+      </div>
+
+      <div class="card">
+        <h4>Backend (server/)</h4>
+        <pre><code>npm install hono @hono/node-server
+npm install ssh2                <span class="comment"># conexión SSH a OLTs y MikroTik</span>
+npm install node-cron           <span class="comment"># tareas programadas</span>
+npm install @supabase/supabase-js
+npm install dotenv
+
+npm install -D typescript tsx @types/ssh2 @types/node</code></pre>
+      </div>
+    </section>
+
+    <!-- 4. INSTALAR CLAUDE CODE -->
+    <section id="sec-claude">
+      <h2><span class="sec-num">04</span> Instalar Claude Code</h2>
+      <p class="lead">Claude Code es el CLI de Anthropic que integra el modelo Claude directamente en tu terminal. Es la herramienta central de este curso: le describes lo que quieres construir y él escribe, edita y explica el código.</p>
+
+      <div class="warn-box"><p>Necesitas Node.js 18+ y una cuenta en <strong>console.anthropic.com</strong> con créditos o suscripción activa.</p></div>
+
+      <h3>Instalación</h3>
+      <div class="pre-label">Terminal (Windows PowerShell / macOS / Linux)</div>
+      <pre><code><span class="comment"># Instalar globalmente</span>
+npm install -g @anthropic-ai/claude-code
+
+<span class="comment"># Verificar instalación</span>
+claude --version    <span class="comment"># claude/1.x.x</span></code></pre>
+
+      <h3>Configurar la API Key</h3>
+      <div class="pre-label">Primera ejecución — sigue el flujo de autenticación</div>
+      <pre><code><span class="comment"># Dentro de la carpeta del proyecto</span>
+cd fosmikro
+claude
+
+<span class="comment"># Claude Code te pedirá autenticación via OAuth con Anthropic</span>
+<span class="comment"># Abre el navegador, inicia sesión y autoriza el acceso</span>
+<span class="comment"># O bien configura la API key manualmente:</span>
+
+<span class="cmd">export ANTHROPIC_API_KEY="sk-ant-api03-..."</span>   <span class="comment"># Linux/macOS</span>
+<span class="cmd">$env:ANTHROPIC_API_KEY="sk-ant-api03-..."</span>     <span class="comment"># Windows PowerShell</span></code></pre>
+
+      <h3>Comandos esenciales de Claude Code</h3>
+      <table>
+        <thead><tr><th>Comando</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td><code>claude</code></td><td>Inicia la sesión interactiva en el proyecto actual</td></tr>
+          <tr><td><code>claude "pregunta"</code></td><td>Consulta directa sin sesión interactiva</td></tr>
+          <tr><td><code>/help</code></td><td>Ayuda dentro de la sesión</td></tr>
+          <tr><td><code>/clear</code></td><td>Limpia el contexto de la conversación</td></tr>
+          <tr><td><code>! npm run dev</code></td><td>Ejecuta un comando shell desde dentro de Claude</td></tr>
+          <tr><td><code>/code-review</code></td><td>Revisión automática de cambios del branch</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box"><p>Claude Code lee automáticamente el archivo <code>CLAUDE.md</code> en la raíz del proyecto como instrucciones persistentes. Úsalo para definir el estilo de código, convenciones y restricciones del proyecto.</p></div>
+    </section>
+
+    <!-- 5. CREAR EL PROYECTO -->
+    <section id="sec-proyecto">
+      <h2><span class="sec-num">05</span> Crear el proyecto desde cero</h2>
+
+      <div class="pre-label">Scaffold inicial</div>
+      <pre><code><span class="comment"># 1. Crear la carpeta</span>
+mkdir fosmikro && cd fosmikro
+git init
+
+<span class="comment"># 2. Scaffold Vite + Vue 3 + TypeScript</span>
+npm create vite@latest . -- --template vue-ts
+
+<span class="comment"># 3. Instalar dependencias del frontend</span>
+npm install
+npm install vue-router pinia @supabase/supabase-js vue-sonner
+npm install leaflet vue-leaflet chart.js vue-chartjs
+npm install jspdf html2canvas xadesjs @heroicons/vue
+npm install -D tailwindcss @tailwindcss/vite
+
+<span class="comment"># 4. Crear el backend</span>
+mkdir server && cd server
+npm init -y
+npm install hono @hono/node-server ssh2 node-cron @supabase/supabase-js dotenv
+npm install -D typescript tsx @types/ssh2 @types/node
+cd ..
+
+<span class="comment"># 5. Crear archivos de configuración</span>
+touch .env .gitignore CLAUDE.md
+touch docker-compose.dev.yml docker-compose.cloud.yml</code></pre>
+
+      <h3>Estructura inicial del <code>CLAUDE.md</code></h3>
+      <pre><code><span class="comment"># CLAUDE.md — Instrucciones para Claude Code</span>
+
+<span class="key">## Idioma</span>
+<span class="val">Responde siempre en español. Los nombres de variables y funciones en inglés.</span>
+
+<span class="key">## Stack</span>
+<span class="val">- Frontend: Vue 3 + TypeScript + Vite + Tailwind CSS v4</span>
+<span class="val">- Backend: Hono + Node.js (ESM, TypeScript via tsx)</span>
+<span class="val">- BD: Supabase (Postgres + Auth + RLS)</span>
+<span class="val">- Docker Compose para despliegue</span>
+
+<span class="key">## Design system</span>
+<span class="val">Usa siempre las variables CSS del tema: --fm-bg-0..3, --fm-border,</span>
+<span class="val">--fm-text-1..3, --fm-cyan, --fm-violet. NO uses colores Tailwind hardcodeados</span>
+<span class="val">para los colores de fondo y texto principales.</span>
+
+<span class="key">## Convenciones</span>
+<span class="val">- Componentes Vue: &lt;script setup lang="ts"&gt; siempre</span>
+<span class="val">- Rutas de API: /api/&lt;módulo&gt;/&lt;acción&gt;</span>
+<span class="val">- Migraciones SQL: supabase/migrations/&lt;nnn&gt;_descripcion.sql</span>
+<span class="val">- Sin comentarios obvios — solo cuando el WHY no sea evidente</span></code></pre>
+    </section>
+
+    <!-- 6. PROMPT COMPLETO -->
+    <section id="sec-prompt">
+      <h2><span class="sec-num">06</span> Prompt completo para Claude Code</h2>
+      <p class="muted" style="font-size:14px; margin-bottom:16px">Este es el prompt de arranque que le das a Claude Code la primera vez para que entienda el proyecto completo. Cópialo en tu primera sesión después de crear el scaffold.</p>
+
+      <div class="prompt-box">
+        <div class="prompt-section">CONTEXTO DEL PROYECTO</div>
+        <p>Estamos construyendo <strong>Fosmikro</strong>, un sistema de gestión completo para ISPs (proveedores de internet por fibra óptica) en Ecuador. El sistema reemplaza soluciones comerciales como SmartOLT o ISP Cube con una plataforma 100% propia, multi-tenant y desplegable en la nube.</p>
+
+        <div class="prompt-section">STACK TECNOLÓGICO</div>
+        <p><strong>Frontend:</strong> Vue 3 + TypeScript + Vite 6, Tailwind CSS v4 con @tailwindcss/vite, Pinia para estado global, Vue Router 4 para navegación con lazy loading. <strong>Backend:</strong> Hono framework sobre Node.js 22 (ESM + TypeScript via tsx), exponiendo una API REST y actuando como proxy SSH hacia OLTs. <strong>Base de datos:</strong> Supabase (PostgreSQL + GoTrue Auth + Row Level Security multi-tenant). <strong>Infraestructura:</strong> Docker Compose con nginx (frontend), Node.js backend, GenieACS (cwmp/nbi/ui), MongoDB (datos TR-069), FreeRADIUS. Deploy en Oracle Cloud Free Tier ARM64 con WireGuard para túnel a la LAN del ISP.</p>
+
+        <div class="prompt-section">DESIGN SYSTEM</div>
+        <p>Tema oscuro "cyber tech". Variables CSS definidas en :root en src/assets/main.css: --fm-bg-0 (#080c14) a --fm-bg-3 (#162038) para fondos, --fm-border (#1e3050) y --fm-border-bright (#2a4570) para bordes, --fm-text-1 (#e2e8f0) a --fm-text-3 (#3d5270) para texto, --fm-cyan (#00d4ff) como acento principal, --fm-violet (#7c3aed) como acento secundario. NUNCA usar colores Tailwind hardcodeados para fondos/texto principales. Los botones de acción tienen colores propios (blue, green, orange, red). Fuente: Inter + Cascadia Code para monoespaciado.</p>
+
+        <div class="prompt-section">ARQUITECTURA DE MÓDULOS</div>
+        <p><strong>1. Auth/Login:</strong> Supabase Auth con email+password. Guard de rutas en Vue Router. Soporte multi-tenant: cada usuario pertenece a una tenant_id. Row Level Security activo en todas las tablas.<br><br>
+        <strong>2. Gestión de clientes:</strong> Tabla clients con estados (prospect → pending → active → suspended → cut → retired). Contratos de servicio, planes, direcciones de instalación. Historial de estados. Documentos. Vista de ficha completa con kardex de cobros.<br><br>
+        <strong>3. OLTs y ONTs:</strong> Tabla olt_devices (brand: huawei/zte/vsol, IP, credenciales SSH). Driver por marca: Huawei MA5800, ZTE C320, V-SOL. Listado de ONTs en tiempo real por puerto PON. Provisión (agregar ONT a un puerto), desprovisión, cambio de modo. Panel de señal óptica por ONT.<br><br>
+        <strong>4. Facturación:</strong> Planes con precio, velocidad. Generación masiva de facturas por mes. Comprobantes electrónicos SRI Ecuador (factura + nota de crédito + nota de débito) firmados digitalmente con XAdES BES usando el certificado .p12 del cliente. PDF en formato RIDE. Caja y cobros por abonado.<br><br>
+        <strong>5. TR-069/GenieACS:</strong> Proxy /api/genieacs → GenieACS NBI. Panel de configuración de WiFi (SSID, clave, canal, frecuencia), WAN/PPPoE (usuario, contraseña), diagnóstico ping/traceroute desde la ONT, actualización de firmware, reset de fábrica. Modo "legacy" via enlace directo a GenieACS UI.<br><br>
+        <strong>6. MikroTik:</strong> API RouterOS para gestión de usuarios PPPoE, pools de IP, firewall, blocking, VLANs, balanceo de carga, monitoreo de interfaces. Integración con corte de servicio por falta de pago.<br><br>
+        <strong>7. RADIUS/BRAS:</strong> FreeRADIUS como servidor de autenticación PPPoE. API para crear/editar/eliminar abonados en radcheck. CoA (Change of Authorization) para corte en tiempo real. Integración con el módulo de cortes automáticos por deuda.<br><br>
+        <strong>8. NOC y monitoreo:</strong> Dashboard de señal óptica (Rx power por ONT). Alertas configurables (umbral de señal, estado offline). Gráficas de disponibilidad. Mapa de calor de fallos por zona.<br><br>
+        <strong>9. Mapa de fibra OSP:</strong> Leaflet.js con capas para nodos (OLTs, splitters, cajas de empalme), tendido de cables (polilíneas), reserva de fibras. Vista de árbol PON. Valoración estimada de la planta (USD por metro de cable).<br><br>
+        <strong>10. CRM:</strong> Tickets de soporte, campañas de WhatsApp (API de Meta), agenda de instalaciones, reportes de desconexiones.</p>
+
+        <div class="prompt-section">MULTI-TENANT</div>
+        <p>Cada ISP es una "tenant". La tabla tenants almacena nombre, RUC, logo, configuración SRI. Todas las tablas tienen tenant_id con políticas RLS: `(tenant_id = auth.jwt()->>'tenant_id')`. Los usuarios se asignan a un tenant al registrarse. El sistema soporta múltiples ISPs independientes en la misma instancia.</p>
+
+        <div class="prompt-section">PATRONES DE CÓDIGO</div>
+        <p>Componentes Vue siempre con &lt;script setup lang="ts"&gt;. API calls a través de servicios en src/services/ (olt.ts, genieacs.ts, mikrotik.ts, etc.). Stores Pinia en src/stores/. Tipos TypeScript en src/types/database.ts generados o mantenidos manualmente desde el schema de Supabase. Migraciones SQL numeradas en supabase/migrations/001_....sql. Backend Hono: rutas en server/src/routes/, drivers OLT en server/src/drivers/. Las respuestas de error siempre incluyen { error: string }. Los endpoints SSH usan ssh2 con keyboard-interactive + password auth, cooldown de 300ms entre comandos.</p>
+
+        <div class="prompt-section">INSTRUCCIONES PERMANENTES</div>
+        <p>— Responde siempre en español.<br>
+        — Sin comentarios obvios en el código; solo cuando el WHY no sea evidente.<br>
+        — No crear archivos README ni documentación a menos que se pida explícitamente.<br>
+        — Prefiere editar archivos existentes a crear nuevos.<br>
+        — Para popups/modales complejos: usar window.open() hacia una ruta Vue dedicada (Teleport con dialog puede fallar en contextos anidados).<br>
+        — Los CSS de la UI usan variables --fm-* del design system, NO clases Tailwind de color hardcodeadas.<br>
+        — Al desplegar: usar --no-deps --pull never en docker compose up para evitar errores de imagen genieacs.</p>
+      </div>
+    </section>
+
+    <!-- 7. VISTA GENERAL DE FASES -->
+    <section id="sec-fases">
+      <h2><span class="sec-num">07</span> Fases de desarrollo</h2>
+      <p class="muted" style="font-size:14px; margin-bottom:4px">El proyecto se divide en 12 fases que van desde el entorno base hasta el despliegue en producción. Cada fase tiene un prompt específico que le das a Claude Code.</p>
+
+      <div class="phase-grid">
+        <div class="phase-card p0"><div class="phase-num">Fase 0</div><div class="phase-title">Entorno base</div><div class="phase-desc">Setup del proyecto, Docker, variables de entorno y conexión a Supabase.</div></div>
+        <div class="phase-card p1"><div class="phase-num">Fase 1</div><div class="phase-title">Fundación y Auth</div><div class="phase-desc">Design system, shell de la app, login/logout, multi-tenant y navegación principal.</div></div>
+        <div class="phase-card p2"><div class="phase-num">Fase 2</div><div class="phase-title">Gestión de clientes</div><div class="phase-desc">CRUD completo de clientes, contratos, planes, estados y ficha de abonado.</div></div>
+        <div class="phase-card p3"><div class="phase-num">Fase 3</div><div class="phase-title">OLT / ONT</div><div class="phase-desc">Conexión SSH a OLTs, listado de ONTs, provisión, desprovisión y señal óptica.</div></div>
+        <div class="phase-card p4"><div class="phase-num">Fase 4</div><div class="phase-title">Facturación SRI</div><div class="phase-desc">Planes, generación de facturas, comprobantes electrónicos XAdES, PDFs RIDE.</div></div>
+        <div class="phase-card p5"><div class="phase-num">Fase 5</div><div class="phase-title">TR-069 / GenieACS</div><div class="phase-desc">Panel de WiFi/WAN remoto, diagnóstico ping, firmware, reset de fábrica.</div></div>
+        <div class="phase-card p6"><div class="phase-num">Fase 6</div><div class="phase-title">MikroTik</div><div class="phase-desc">RouterOS API: PPPoE, pools IP, firewall, blocking, VLANs y monitoreo.</div></div>
+        <div class="phase-card p7"><div class="phase-num">Fase 7</div><div class="phase-title">NOC y monitoreo</div><div class="phase-desc">Dashboard de señal óptica, alertas configurables, gráficas de disponibilidad.</div></div>
+        <div class="phase-card p8"><div class="phase-num">Fase 8</div><div class="phase-title">Mapa de fibra OSP</div><div class="phase-desc">Leaflet: nodos, cables, splitters, árbol PON y valoración de planta externa.</div></div>
+        <div class="phase-card p9"><div class="phase-num">Fase 9</div><div class="phase-title">RADIUS / BRAS</div><div class="phase-desc">FreeRADIUS: creación de abonados, CoA para corte en tiempo real, reportes.</div></div>
+        <div class="phase-card p10"><div class="phase-num">Fase 10</div><div class="phase-title">CRM y WhatsApp</div><div class="phase-desc">Tickets, campañas de WhatsApp, agenda de instalaciones, reportes CxC.</div></div>
+        <div class="phase-card p11"><div class="phase-num">Fase 11</div><div class="phase-title">Deploy producción</div><div class="phase-desc">Docker Compose cloud, Oracle VM, WireGuard, Caddy HTTPS, CI básico.</div></div>
+      </div>
+    </section>
+
+    <hr class="divider" />
+
+    <!-- FASE 0 -->
+    <section id="sec-fase0">
+      <h2><span class="sec-num">F0</span> Fase 0 — Entorno base</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Tener el proyecto corriendo localmente: frontend Vite en <code>localhost:5173</code>, backend Hono en <code>localhost:3002</code>, y la BD Supabase conectada.</p>
+      </div>
+      <h3>Prompt para Claude Code</h3>
+      <pre><code>Configura el entorno base de Fosmikro:
+1. Vite + Vue 3 + TypeScript con Tailwind CSS v4 (@tailwindcss/vite)
+2. Hono backend en server/ con script dev (tsx watch)
+3. Proxy en vite.config.ts: /api → http://localhost:3002
+4. src/lib/supabase.ts con createClient desde VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY
+5. .env con las variables necesarias (valores de ejemplo)
+6. .gitignore apropiado
+7. docker-compose.dev.yml con servicios: genieacs-cwmp, genieacs-nbi, genieacs-ui, mongodb</code></pre>
+
+      <h3>Tareas</h3>
+      <ul>
+        <li>Configurar <code>vite.config.ts</code> con plugin Vue, Tailwind y proxy <code>/api</code></li>
+        <li>Crear <code>server/src/index.ts</code> con Hono y ruta de salud <code>GET /api/health</code></li>
+        <li>Crear <code>src/lib/supabase.ts</code> con el cliente Supabase</li>
+        <li>Configurar <code>tsconfig.json</code> con paths alias <code>@/</code></li>
+        <li>Levantar GenieACS localmente con Docker Compose</li>
+      </ul>
+    </section>
+
+    <!-- FASE 1 -->
+    <section id="sec-fase1">
+      <h2><span class="sec-num">F1</span> Fase 1 — Fundación y Auth</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Shell de la aplicación con el design system completo, login con Supabase Auth y guard de rutas. El usuario ve la barra lateral de navegación y el header después de autenticarse.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Construye la fundación de Fosmikro:
+
+Design system en src/assets/main.css:
+- Variables CSS: --fm-bg-0..3 (fondos oscuros), --fm-border/bright, --fm-cyan, --fm-violet, --fm-text-1..3
+- Clases utilitarias: .btn-primary, .btn-secondary, .input, .label, .card, .tbl-head, .tbl-row
+
+Layout principal AppShell.vue:
+- Sidebar izquierdo colapsable con íconos y etiquetas (Heroicons)
+- Header con nombre del ISP, usuario y botón de logout
+- Área de contenido con &lt;RouterView /&gt;
+
+Auth:
+- LoginView.vue con formulario email + contraseña usando Supabase Auth
+- store/auth.ts con Pinia: usuario, tenant_id, login(), logout(), onAuthChange()
+- Navigation guard en router: redirige a /login si no autenticado
+
+Rutas iniciales:
+- /login → LoginView
+- / → DashboardView (placeholder)
+- /clients → ClientsIndex (placeholder)
+- /olt → OltManagerView (placeholder)</code></pre>
+
+      <h3>Migraciones SQL</h3>
+      <pre><code><span class="comment">-- supabase/migrations/001_tenants.sql</span>
+CREATE TABLE tenants (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  ruc TEXT,
+  logo_url TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+<span class="comment">-- supabase/migrations/002_rls_tenants.sql</span>
+ALTER TABLE tenants ENABLE ROW LEVEL SECURITY;
+<span class="comment">-- Los usuarios solo ven su propio tenant</span>
+CREATE POLICY tenants_own ON tenants
+  USING (id = (auth.jwt()->>'tenant_id')::uuid);</code></pre>
+    </section>
+
+    <!-- FASE 2 -->
+    <section id="sec-fase2">
+      <h2><span class="sec-num">F2</span> Fase 2 — Gestión de clientes</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>CRUD completo de abonados: lista paginada con filtros, formulario de registro, ficha de cliente con contratos, historial de estados y kardex de pagos.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo de clientes de Fosmikro:
+
+Tablas Supabase:
+- clients (id, tenant_id, code, first_name, last_name, business_name, document_type,
+  document_number, email, mobile, status, zone_id, created_at)
+- service_contracts (id, client_id, plan_id, pppoe_username, ip_address,
+  installation_address, connection_type, status, start_date)
+- client_status_history (id, client_id, old_status, new_status, reason, changed_by, created_at)
+
+Vistas:
+- clients_with_contract: JOIN clients + contrato activo + plan
+
+Pantallas Vue:
+- ClientsIndex.vue: tabla paginada con búsqueda, filtro por estado/zona, exportar CSV
+- ClientForm.vue: formulario de registro con tabs (datos personales, servicio, dirección)
+- ClientShow.vue: ficha completa — resumen, historial de estados, kardex de cobros,
+  botones de cambio de estado (activo/suspendido/cortado/retirado)
+
+Store:
+- stores/clients.ts: fetchClients(filters), fetchClient(id), createClient, updateClient,
+  changeStatus(clientId, newStatus, reason)</code></pre>
+    </section>
+
+    <!-- FASE 3 -->
+    <section id="sec-fase3">
+      <h2><span class="sec-num">F3</span> Fase 3 — OLT / ONT</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Conexión SSH a OLTs Huawei MA5800, ZTE C320 y V-SOL. Lista de ONTs en tiempo real, provisión de nuevas ONTs, señal óptica, cambio de modo y corte.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo OLT/ONT de Fosmikro:
+
+Backend server/src/drivers/:
+- Interfaz OltDriver con métodos: listCards, listPonPorts, listOnts, getOnt,
+  addOnt, removeOnt, getOpticalSignal, setOntMode
+- huawei-ma5800.ts: driver para MA5800 vía SSH (keyboard-interactive auth),
+  comandos: display ont info, display ont optical-info, ont add/delete/deactivate
+- zte-c320.ts: driver ZTE con comandos equivalentes
+- vsol.ts: driver V-SOL
+- Función familyOf(device) que selecciona el driver correcto por brand
+
+Backend routes/olt.ts:
+- GET  /api/olt/:deviceId/onts?slot=&port=
+- GET  /api/olt/:deviceId/ont/:serial
+- POST /api/olt/:deviceId/onts  (provisión)
+- DELETE /api/olt/:deviceId/onts/:serial
+- GET  /api/olt/:deviceId/signal?slot=&port=&ontId=
+
+Frontend:
+- OltManagerView.vue: lista de OLTs del ISP, botón agregar
+- OnuListView.vue: tabla de ONTs de un puerto PON con señal, estado, botones de acción
+- OntDetailPanel.vue: panel lateral con información completa de una ONT</code></pre>
+
+      <div class="warn-box"><p>Los comandos SSH a la OLT requieren un cooldown de 300ms entre comandos y un timeout de 150ms para la lectura del prompt. El cliente ssh2 debe usar <code>keyboard-interactive</code> además de <code>password</code> en los métodos de autenticación.</p></div>
+    </section>
+
+    <!-- FASE 4 -->
+    <section id="sec-fase4">
+      <h2><span class="sec-num">F4</span> Fase 4 — Facturación SRI</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Generación masiva de facturas mensuales, firma digital XAdES BES con el certificado del ISP, envío al SRI Ecuador y PDFs en formato RIDE.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo de facturación electrónica SRI Ecuador:
+
+Tablas:
+- plans (id, tenant_id, name, price, download_speed, upload_speed, description)
+- invoices (id, tenant_id, client_id, number, date, subtotal, iva, total,
+  access_key, authorization_date, status: draft|authorized|cancelled)
+- invoice_items (invoice_id, description, quantity, unit_price, subtotal)
+- payments (id, invoice_id, client_id, amount, method, paid_at)
+
+Lógica de negocio:
+- Generar factura electrónica como XML siguiendo el esquema SRI versión 2.1.0
+- Firmar el XML con XAdES BES usando el certificado .p12 del ISP (xadesjs library)
+- Enviar al SRI (ambiente pruebas + producción): recepción → autorización
+- Generar PDF RIDE (representación impresa) con jsPDF
+
+Pantallas:
+- BillingView.vue: generación masiva por mes, tabla de facturas, filtros
+- InvoiceShow.vue: visualización de factura individual, botón descargar PDF/XML
+- PaymentsView.vue: registro de cobros, caja del día</code></pre>
+    </section>
+
+    <!-- FASE 5 -->
+    <section id="sec-fase5">
+      <h2><span class="sec-num">F5</span> Fase 5 — TR-069 / GenieACS</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Panel completo de gestión remota de ONTs vía TR-069: WiFi, WAN/PPPoE, diagnóstico ping/traceroute, firmware y reset de fábrica.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo TR-069 de Fosmikro:
+
+Backend proxy server/src/routes/genieacs.ts:
+- Reenvío de todas las peticiones /api/genieacs/* al GenieACS NBI (port 7557)
+- Función getDevice(id): GET /devices?query={"_id":"..."}
+- Función createTask(deviceId, task): POST /devices/:id/tasks
+- Mock automático para IDs "DEMO-ONU-*" sin necesitar GenieACS real
+
+Frontend OntTr069Panel.vue (abre en modal sobre OnuListView):
+- Sección General: fabricante, modelo, serial, firmware, URL ACS
+- Sección PPP Interface: usuario/clave PPPoE, estado WAN, IP externa
+- Sección WiFi 2.4GHz y 5GHz: SSID, contraseña, canal, potencia, asociaciones
+- Sección LAN DHCP: rango de IPs, gateway
+- Sección Diagnóstico: ping + traceroute ejecutados desde la ONT
+- Sección Firmware: lista de archivos en ACS, botón actualizar
+- Botones: Guardar cambios (setParameterValues), Leer ONT, Reiniciar, Reset fábrica
+
+Flujo de detección:
+- Buscar el dispositivo en GenieACS por número de serie o IP de gestión
+- Si no se encuentra: mostrar enlace directo a GenieACS UI (modo legacy)</code></pre>
+    </section>
+
+    <!-- FASE 6 -->
+    <section id="sec-fase6">
+      <h2><span class="sec-num">F6</span> Fase 6 — MikroTik</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Integración con RouterOS API para gestión de usuarios PPPoE, pools de IP, firewall, address lists y monitoreo de interfaces en tiempo real.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo MikroTik de Fosmikro:
+
+Backend server/src/routes/mikrotik.ts:
+- Conexión a RouterOS API (puerto 8728/8729) vía ssh2 + comandos /ip/pppoe-server/...
+- Endpoints:
+  GET  /api/mikrotik/:id/pppoe-users
+  POST /api/mikrotik/:id/pppoe-users  (crear)
+  PUT  /api/mikrotik/:id/pppoe-users/:name  (editar)
+  DELETE /api/mikrotik/:id/pppoe-users/:name
+  POST /api/mikrotik/:id/address-list  (agregar a lista de corte)
+  DELETE /api/mikrotik/:id/address-list/:address
+  GET  /api/mikrotik/:id/interfaces/traffic  (bandwidth en tiempo real)
+  POST /api/mikrotik/:id/ping  (ping desde MikroTik a IP cliente)
+
+Frontend MikrotikView.vue:
+- Lista de dispositivos MikroTik del ISP
+- Panel de usuarios PPPoE activos con sesiones
+- Address list de bloqueados
+- Monitor de tráfico por interfaz (Chart.js, actualización cada 5s)</code></pre>
+    </section>
+
+    <!-- FASE 7 -->
+    <section id="sec-fase7">
+      <h2><span class="sec-num">F7</span> Fase 7 — NOC y Monitoreo</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Centro de operaciones: señal óptica en tiempo real, alertas por umbral, dashboard de disponibilidad y mapa de calor de fallos.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo NOC de Fosmikro:
+
+Backend scheduler (node-cron cada 5 min):
+- Leer señal óptica de todas las ONTs de todos los OLTs del tenant
+- Guardar en tabla optical_readings (ont_serial, rx_power, tx_power,
+  olt_device_id, port, timestamp)
+- Detectar ONTs fuera de umbral (ej: Rx < -25 dBm) → generar noc_alerts
+
+Tablas:
+- optical_readings: historial de señal por ONT
+- noc_alerts (id, tenant_id, type, severity, device_id, message, resolved_at)
+- alert_rules (tenant_id, type, threshold, enabled)
+
+Frontend:
+- NocDashboardView.vue: contador de alertas activas, gráfica de señal promedio,
+  tabla de ONTs con peor señal (top 10)
+- NocAlertsView.vue: lista de alertas con severidad, tiempo activo, botón resolver
+- NocOpticaView.vue: tabla de todas las ONTs con señal actual, coloreada por rango
+  (verde > -20, amarillo -20 a -25, rojo < -25 dBm)</code></pre>
+    </section>
+
+    <!-- FASE 8 -->
+    <section id="sec-fase8">
+      <h2><span class="sec-num">F8</span> Fase 8 — Mapa de fibra OSP</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Mapa interactivo de la planta externa: nodos (OLTs, splitters, cajas), cables de fibra con número de hilos, y árbol PON con clientes asignados.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo de mapa de fibra OSP:
+
+Tablas:
+- infra_nodes (id, tenant_id, type: olt|splitter|splice_box|client_ont,
+  name, lat, lng, description, metadata jsonb)
+- infra_links (id, tenant_id, from_node_id, to_node_id,
+  cable_type, fiber_count, length_m, cost_per_m, notes)
+- infra_splitters (id, node_id, ratio: 1x4|1x8|1x16|1x32, fibers_used)
+
+Frontend FibraMapaView.vue:
+- Mapa Leaflet con capas: OLTs (ícono servidor), splitters (ícono divisor),
+  clientes (ícono casa), cables (líneas coloreadas por tipo)
+- Click en nodo: panel lateral con detalles y edición
+- Herramienta de dibujo: agregar nodo (click en mapa), trazar cable (polyline)
+- Panel OSP: árbol de conexiones OLT → splitter → cliente
+- Estadísticas: metros de fibra total, valoración USD, capacidad usada/libre</code></pre>
+    </section>
+
+    <!-- FASE 9 -->
+    <section id="sec-fase9">
+      <h2><span class="sec-num">F9</span> Fase 9 — RADIUS / BRAS</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Integración con FreeRADIUS para autenticación PPPoE por capa de red. Creación de abonados en radcheck, corte inmediato vía CoA, reportes de sesiones activas.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo RADIUS/BRAS de Fosmikro:
+
+Backend server/src/routes/radius.ts:
+- Conexión a FreeRADIUS vía API REST (módulo rest de FreeRADIUS o conexión directa
+  a radcheck/radreply en MySQL)
+- Endpoints:
+  GET  /api/radius/users         (listar abonados en radcheck)
+  POST /api/radius/users         (crear: username, password, profile)
+  PUT  /api/radius/users/:user   (actualizar)
+  DELETE /api/radius/users/:user (eliminar)
+  POST /api/radius/coa/:user     (Change of Authorization: corte/reconexión)
+  GET  /api/radius/sessions      (sesiones activas desde radacct)
+
+Integración con cortes:
+- Al cambiar cliente a estado "cut": ejecutar CoA para desconectar sesión PPPoE
+- Al reconectar: limpiar dirección en address-list de MikroTik
+
+Frontend NasView.vue:
+- Lista de servidores RADIUS/NAS registrados
+- AbonadosView.vue: CRUD de usuarios RADIUS con perfil de velocidad asignado
+- SesionesView.vue: sesiones PPPoE activas en tiempo real (poll cada 30s)</code></pre>
+    </section>
+
+    <!-- FASE 10 -->
+    <section id="sec-fase10">
+      <h2><span class="sec-num">F10</span> Fase 10 — CRM y WhatsApp</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Sistema de tickets de soporte, notificaciones automáticas por WhatsApp (API Meta), agenda de instalaciones y campañas masivas.</p>
+      </div>
+      <h3>Prompt</h3>
+      <pre><code>Implementa el módulo CRM de Fosmikro:
+
+Tablas:
+- tickets (id, tenant_id, client_id, title, description, status, priority,
+  assigned_to, created_at, resolved_at)
+- ticket_messages (ticket_id, user_id, body, created_at)
+- whatsapp_config (tenant_id, phone_number_id, access_token, webhook_verify_token)
+- whatsapp_messages (id, tenant_id, client_id, direction, body, status, sent_at)
+- crm_campaigns (id, tenant_id, name, message_template, target_filter jsonb,
+  status: draft|sending|done, sent_count)
+
+Frontend:
+- SoporteView.vue: kanban de tickets por estado (abierto/en proceso/resuelto)
+- TicketDetailView.vue: hilo de mensajes, cambio de estado, asignar agente
+- WhatsappConfigView.vue: configuración de la API de Meta
+- CrmCampaignsView.vue: crear campaña, seleccionar destinatarios (por estado/zona/deuda),
+  enviar mensajes masivos programados
+
+Backend webhook:
+- POST /api/whatsapp/webhook: recibir mensajes entrantes de WhatsApp
+- POST /api/whatsapp/send: enviar mensaje a un número</code></pre>
+    </section>
+
+    <!-- FASE 11 -->
+    <section id="sec-fase11">
+      <h2><span class="sec-num">F11</span> Fase 11 — Deploy a producción</h2>
+      <div class="card card-accent">
+        <h4>Objetivo</h4>
+        <p>Desplegar el sistema completo en Oracle Cloud Free Tier con Docker Compose, HTTPS automático y túnel WireGuard hacia la LAN del ISP.</p>
+      </div>
+
+      <h3>Prompt</h3>
+      <pre><code>Configura el deploy de producción de Fosmikro:
+
+docker-compose.cloud.yml con servicios:
+- frontend: build con Vite (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY como ARG),
+  nginx sirve el dist/ y hace proxy /api → backend
+- backend: Node.js con tsx, variables de entorno desde .env del VPS
+- genieacs-cwmp, genieacs-nbi, genieacs-ui, genieacs-fs: imágenes genieacs/genieacs:1.2
+- mongodb: mongo:6 (solo para GenieACS)
+- freeradius: (imagen custom con raddb configurado)
+
+deploy/Dockerfile.frontend: multi-stage (node:22-slim build + nginx:alpine serve)
+deploy/Dockerfile.backend: node:22-slim con tsx
+
+deploy/nginx.conf:
+- Proxy /api → backend:3002
+- SPA fallback a index.html
+- Cache 30d para /assets/ (hashed)
+- NO-cache para index.html (no-store, must-revalidate)
+
+deploy/setup-vps.sh:
+- Instalar Docker + Compose en Ubuntu 22.04 ARM64
+- Instalar WireGuard
+- Clonar repo y levantar el stack
+
+Script de actualización (un solo comando):
+ssh -i key ubuntu@IP "cd ~/fosmikro && git pull && \
+  sudo docker compose -f docker-compose.cloud.yml build --no-cache frontend backend && \
+  sudo docker compose -f docker-compose.cloud.yml up -d --no-deps --pull never frontend backend"</code></pre>
+
+      <h3>Configuración WireGuard</h3>
+      <pre><code><span class="comment"># /etc/wireguard/wg0.conf en el VPS (concentrador)</span>
+[Interface]
+Address = 10.200.0.1/16
+ListenPort = 51820
+PrivateKey = &lt;VPS_PRIVATE_KEY&gt;
+
+[Peer]  <span class="comment"># MikroTik del ISP (sitio 1)</span>
+PublicKey = &lt;MIKROTIK_PUBLIC_KEY&gt;
+AllowedIPs = 10.200.1.0/24
+PersistentKeepalive = 25
+
+<span class="comment"># En el MikroTik RouterOS:</span>
+<span class="comment"># /interface wireguard peers add interface=wg-fosmikro public-key="&lt;VPS_PUB&gt;" endpoint-address=&lt;VPS_IP&gt;:51820</span>
+<span class="comment"># /ip route add dst-address=0.0.0.0/0 gateway=wg-fosmikro  (solo tráfico fosmikro)</span>
+<span class="comment"># /ip firewall nat add chain=dstnat dst-address=10.200.1.2 action=dst-nat to-addresses=192.168.1.100  (OLT)</span></code></pre>
+    </section>
+
+    <!-- ESTRUCTURA DEL PROYECTO -->
+    <section id="sec-estructura">
+      <h2><span class="sec-num">12</span> Estructura final del proyecto</h2>
+      <pre><code>fosmikro/
+├── <span class="key">src/</span>                     <span class="comment"># Frontend Vue 3</span>
+│   ├── assets/main.css     <span class="comment"># Design system (variables CSS)</span>
+│   ├── lib/supabase.ts     <span class="comment"># Cliente Supabase</span>
+│   ├── router/index.ts     <span class="comment"># Rutas + guards</span>
+│   ├── stores/             <span class="comment"># Pinia: auth, clients, olt...</span>
+│   ├── services/           <span class="comment"># olt.ts, genieacs.ts, mikrotik.ts...</span>
+│   ├── types/database.ts   <span class="comment"># Tipos TypeScript del schema</span>
+│   ├── drivers/            <span class="comment"># onuCatalog.ts, tipos de equipo</span>
+│   └── views/
+│       ├── auth/           <span class="comment"># LoginView</span>
+│       ├── clients/        <span class="comment"># ClientsIndex, ClientForm, ClientShow</span>
+│       ├── olt/            <span class="comment"># OltManagerView, OnuListView, OntTr069Panel</span>
+│       ├── billing/        <span class="comment"># BillingView, InvoiceShow, PaymentsView</span>
+│       ├── mikrotik/       <span class="comment"># MikrotikView, MikrotikBlockingView</span>
+│       ├── noc/            <span class="comment"># NocDashboardView, NocAlertsView, NocOpticaView</span>
+│       ├── fibra/          <span class="comment"># FibraMapaView, FibraStatsView</span>
+│       ├── radius/         <span class="comment"># NasView, AbonadosView, SesionesView</span>
+│       └── crm/            <span class="comment"># SoporteView, WhatsappConfigView, CrmCampaignsView</span>
+│
+├── <span class="key">server/</span>                  <span class="comment"># Backend Hono</span>
+│   └── src/
+│       ├── index.ts        <span class="comment"># Entry point Hono</span>
+│       ├── middleware/     <span class="comment"># auth, cors, logging</span>
+│       ├── routes/         <span class="comment"># olt.ts, genieacs.ts, mikrotik.ts, radius.ts...</span>
+│       └── drivers/        <span class="comment"># huawei-ma5800.ts, zte-c320.ts, vsol.ts, demo-olt.ts</span>
+│
+├── <span class="key">supabase/</span>
+│   └── migrations/         <span class="comment"># 001_tenants.sql ... 110_xxx.sql</span>
+│
+├── <span class="key">deploy/</span>
+│   ├── Dockerfile.frontend
+│   ├── Dockerfile.backend
+│   ├── nginx.conf
+│   ├── setup-vps.sh
+│   └── wg/                 <span class="comment"># Scripts WireGuard por sitio</span>
+│
+├── docker-compose.cloud.yml
+├── CLAUDE.md
+└── .env</code></pre>
+
+      <div class="info-box" style="margin-top:20px">
+        <p><strong>Tip:</strong> Mantén actualizado el <code>CLAUDE.md</code> a medida que el proyecto crece. Agrega convenciones nuevas, rutas importantes y decisiones de arquitectura. Claude Code lo lee en cada sesión y mantiene coherencia.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+</div>
+
+<footer>
+  <p>Fosmikro ISP Manager — Curso de Desarrollo con IA</p>
+  <p style="margin-top:6px">Construido con <strong style="color:var(--cyan)">Claude Code</strong> · Vue 3 · Hono · Supabase · Docker</p>
+</footer>
+
+</body>
+</html>
